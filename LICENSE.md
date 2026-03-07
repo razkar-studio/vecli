@@ -7,7 +7,7 @@ Copyright (c) 2026 RazkarStudio. All rights reserved.
 ## 1. Definitions
 
 - **"The Licensor"** means "RazkarStudio", the original author and copyright owner of The Software, reachable at [razkar.studio@proton.me](mailto:razkar.studio@proton.me).
-- **"The Software"** means "vela" and any associated source code, documentation, and related files published by The Licensor under this license.
+- **"The Software"** means "vela-cli" and any associated source code, documentation, and related files published by The Licensor under this license.
 - **"You"** means the individual or entity exercising rights under this license.
 - **"Modified Version"** means any work derived from or based on The Software, including any file that has been altered from its original form.
 - **"Unmodified Version"** means The Software in its original form, without any changes.

@@ -1,6 +1,6 @@
 <div align="center">
 
-# vela
+# vela-cli
 
 **A zero-dep CLI engine that's genuinely readable.**
 

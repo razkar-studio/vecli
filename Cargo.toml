@@ -1,6 +1,10 @@
 [package]
-name = "vela"
+name = "vela-cli"
 version = "0.1.0"
 edition = "2024"
-
-[dependencies]
+description = "A zero-dependency, bare-bones CLI framework that's genuinely readable."
+license-file = "LICENSE.md"
+repository = "https://github.com/razkar-studio/vela"
+readme = "README.md"
+keywords = ["cli", "terminal", "framework", "args"]
+categories = ["command-line-interface"]
