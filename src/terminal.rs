@@ -58,7 +58,7 @@ impl Terminal {
                     suffix += &match default {
                         "" => choice.to_string(),
                         _ => {
-                            if *choice == default {
+                            if *choice == default && show_default {
                                 format!("{}*", choice)
                             } else {
                                 choice.to_string()
