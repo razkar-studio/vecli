@@ -1,4 +1,4 @@
-use crate::input;
+use crate::utils::input;
 
 pub struct Terminal;
 
