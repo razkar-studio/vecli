@@ -8,8 +8,8 @@ impl Terminal {
     }
 
     pub fn confirm(prompt: &str, default: Option<bool>, show_default: Option<bool>) -> bool {
-        let default = default.map_or(false, |v| v);
-        let show_default = show_default.map_or(true, |v| v);
+        let default = default.is_some_and(|v| v);
+        let show_default = show_default.is_none_or(|v| v);
 
         let suffix = if show_default {
             match default {
@@ -40,8 +40,8 @@ impl Terminal {
         show_default: Option<bool>,
         show_choices: Option<bool>,
     ) -> String {
-        let show_choices = show_choices.map_or(true, |v| v);
-        let show_default = show_default.map_or(true, |v| v);
+        let show_choices = show_choices.is_none_or(|v| v);
+        let show_default = show_default.is_none_or(|v| v);
         let default = default.map_or("", |v| v);
 
         if choices.is_empty() {
@@ -81,7 +81,7 @@ impl Terminal {
                 .to_lowercase();
             if choices.iter().any(|c| c.to_lowercase() == choice) {
                 return choice;
-            } else if !default.is_empty() && choice == "" {
+            } else if !default.is_empty() && choice.is_empty() {
                 return default.to_string();
             }
             println!("Invalid input. Please answer one of the choices.");

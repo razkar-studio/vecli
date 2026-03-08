@@ -8,46 +8,103 @@ pub struct CommandContext {
 
 #[derive(Default)]
 pub struct App {
-    prog: &'static str,
-    name: &'static str,
-    description: &'static str,
-    version: &'static str,
+    prog: String,
+    name: String,
+    description: String,
+    version: String,
     commands: Vec<Command>,
     show_help_if_no_args: bool,
     show_help_on_fail: bool,
 }
 
 pub struct Command {
-    name: &'static str,
-    description: &'static str,
-    usage: Option<&'static str>,
+    name: String,
+    description: String,
+    known_flags: Vec<Flag>,
+    usage: Option<String>,
     handler: fn(&CommandContext),
+    strict_flags: bool,
 }
 
-impl App {
-    pub fn new() -> Self {
+#[derive(Default)]
+pub struct Flag {
+    pub name: String,
+    pub alias: Option<String>,
+    pub description: Option<String>,
+}
+
+impl Flag {
+    pub fn new(name: impl Into<String>) -> Self {
         Self {
+            name: name.into(),
             ..Default::default()
         }
     }
 
-    pub fn prog(mut self, prog_name: &'static str) -> Self {
-        self.prog = prog_name;
+    pub fn alias(mut self, alias: impl Into<String>) -> Self {
+        self.alias = Some(alias.into());
         self
     }
 
-    pub fn name(mut self, name: &'static str) -> Self {
-        self.name = name;
+    pub fn description(mut self, desc: impl Into<String>) -> Self {
+        self.description = Some(desc.into());
+        self
+    }
+}
+
+impl Command {
+    pub fn new(name: impl Into<String>, handler: fn(&CommandContext)) -> Self {
+        Self {
+            name: name.into(),
+            handler,
+            description: "".into(),
+            known_flags: Vec::new(),
+            usage: None,
+            strict_flags: false,
+        }
+    }
+
+    pub fn description(mut self, description: impl Into<String>) -> Self {
+        self.description = description.into();
         self
     }
 
-    pub fn description(mut self, desc: &'static str) -> Self {
-        self.description = desc;
+    pub fn usage(mut self, usage: impl Into<String>) -> Self {
+        self.usage = Some(usage.into());
         self
     }
 
-    pub fn version(mut self, version: &'static str) -> Self {
-        self.version = version;
+    pub fn strict_flags(mut self, strict: bool) -> Self {
+        self.strict_flags = strict;
+        self
+    }
+
+    pub fn flag(mut self, flag: Flag) -> Self {
+        self.known_flags.push(flag);
+        self
+    }
+}
+
+impl App {
+    pub fn new(prog_name: impl Into<String>) -> Self {
+        Self {
+            prog: prog_name.into(),
+            ..Default::default()
+        }
+    }
+
+    pub fn name(mut self, name: impl Into<String>) -> Self {
+        self.name = name.into();
+        self
+    }
+
+    pub fn description(mut self, desc: impl Into<String>) -> Self {
+        self.description = desc.into();
+        self
+    }
+
+    pub fn version(mut self, version: impl Into<String>) -> Self {
+        self.version = version.into();
         self
     }
 
@@ -65,18 +122,30 @@ impl App {
         self.commands.iter().find(|c| c.name == name)
     }
 
-    pub fn add_command(
+    pub fn add_command(mut self, command: Command) -> Self {
+        self.commands.push(command);
+        self
+    }
+
+    pub fn add_command_param(
         mut self,
-        name: &'static str,
-        description: &'static str,
+        name: impl Into<String>,
+        flags: Option<Vec<Flag>>,
+        description: impl Into<String>,
         handler: fn(&CommandContext),
-        usage: Option<&'static str>,
+        usage: Option<impl Into<String>>,
+        strict_flags: bool,
     ) -> Self {
+        // Command says, usage: Option<String>
+        // this usage is: usage: Option<impl Into<String>>
+        // still fails..
         self.commands.push(Command {
-            name,
-            description,
+            name: name.into(),
+            description: description.into(),
             handler,
-            usage,
+            usage: usage.map(|u| u.into()),
+            known_flags: flags.unwrap_or_default(),
+            strict_flags,
         });
         self
     }
@@ -96,17 +165,18 @@ impl App {
 
     pub fn run(&self) {
         let args: Vec<String> = std::env::args().skip(1).collect();
-        let flags = parse_flags(&args);
+        let parsed_flags = parse_flags(&args);
+        // Hmm.. how do we determine about aliases..
+        // THINKING BOARD
+        // parse_flags returns {'h': 'true'}
+        // Flag::new("help").alias("h") // 'h' in self.alias!
+        // loop through flags and command?
+        // flag.name == command.alias?
+        // > it's an alias! replace the entry or something (i dont know how to do this one)
+        // resolved!
+        let mut flags = std::collections::HashMap::new();
 
-        // THOUGHT PAUSE: A thought that doesn't need to be in a separate file  //
-        // Why check this first?                                                //
-        // - subcommand would print their error if it's first, and              //
-        //   the contains check depends on subcommand already being defined.    //
-        // Why not just use args[0]?                                            //
-        // - Uhh, I don't know.                                                 //
-        // RESOLVED                                                             //
-
-        if args.len() == 0 && self.show_help_if_no_args {
+        if args.is_empty() && self.show_help_if_no_args {
             self.print_help();
             return;
         }
@@ -127,15 +197,19 @@ impl App {
             return;
         };
 
-        // ROADBLOCK! while implementing board #2
-        // we don't actually know which command `subcommand` is yet.
-        // OPTION! In app: move that for loop here/above and save as variable (CHANGES: derive(Copy) to Command)
-        // OPTION! Extract: move that for loop in `utils.rs` as find_command(item: &str, in: Vec<Command>) and return vec_item that matches.
-        // RESOLVED: OPTION! NEW! Internal helper
+        for (key, value) in &parsed_flags {
+            let canonical = command
+                .known_flags
+                .iter()
+                .find(|f| f.alias.as_deref() == Some(key.as_str()))
+                .map(|f| f.name.clone())
+                .unwrap_or_else(|| key.clone());
+            flags.insert(canonical, value.clone());
+        }
 
         if flags.contains_key("help") {
             if !subcommand.is_empty() {
-                match command.usage {
+                match &command.usage {
                     Some(usage) => println!(
                         "Usage: {} {} {}\n{}",
                         self.prog, command.name, usage, command.description
@@ -156,11 +230,56 @@ impl App {
             return;
         }
 
+        for parsed_flag in flags.keys() {
+            if parsed_flag == "help" || parsed_flag == "version" {
+                continue;
+            }
+            let is_known = command.known_flags.iter().any(|f| f.name == *parsed_flag);
+            if !is_known {
+                if command.strict_flags {
+                    println!(
+                        "error: Unknown flag '--{}' for command '{}'.",
+                        parsed_flag, subcommand
+                    );
+                    return;
+                }
+                println!(
+                    "warning: Unknown flag '--{}' for command '{}'.",
+                    parsed_flag, subcommand
+                );
+            }
+        }
+
         (command.handler)(&CommandContext {
             subcommand,
-            positionals: args[1..].to_vec(),
+            positionals: args[1..]
+                .iter()
+                .filter(|a| !a.starts_with('-'))
+                .cloned()
+                .collect(),
             flags: flags.clone(),
         });
-        return;
     }
 }
+
+// FUTURE FEATURES? //
+// after 0.1.0 (base):
+// - commands use their docstring as the description?
+//
+// SHOWCASE //
+// // It's this easy.
+// use vela::{App, CommandContext};
+//
+// fn hello(_: &CommandContext) {
+//      println!("Hello!")
+// }
+//
+// fn main() {
+//      let app = App::new("my-app")
+//          .name("My App")
+//          .description("My App's Description")
+//          .add_command(Command::new("hello", hello));
+//
+//      app.run();
+// }
+//

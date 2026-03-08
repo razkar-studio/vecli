@@ -20,13 +20,24 @@ pub fn parse_flags<S: AsRef<str>>(args: &[S]) -> std::collections::HashMap<Strin
     while i < args.len() {
         let arg = args[i];
 
-        if arg.starts_with("--") && !arg.starts_with("---") {
-            let flag_name = arg[2..].to_string();
-
-            if i + 1 < args.len() && !args[i + 1].starts_with("--") {
-                flags.insert(flag_name, args[i + 1].to_string());
-                i += 2;
+        if arg.starts_with("-") && !arg.starts_with("---") {
+            let flag_name = if let Some(stripped) = arg.strip_prefix("--") {
+                stripped.to_string()
             } else {
+                arg[1..].to_string()
+            };
+
+            if arg.starts_with("--") {
+                // long flags can have values: --version 1.0
+                if i + 1 < args.len() && !args[i + 1].starts_with("-") {
+                    flags.insert(flag_name, args[i + 1].to_string());
+                    i += 2;
+                } else {
+                    flags.insert(flag_name, "true".to_string());
+                    i += 1;
+                }
+            } else {
+                // short flags are always boolean: -h -> true
                 flags.insert(flag_name, "true".to_string());
                 i += 1;
             }

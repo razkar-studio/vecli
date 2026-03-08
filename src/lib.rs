@@ -6,5 +6,6 @@ mod utils;
 pub use app::App;
 pub use app::Command;
 pub use app::CommandContext;
+pub use app::Flag;
 
 pub use terminal::Terminal;

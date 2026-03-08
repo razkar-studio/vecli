@@ -1,5 +1,5 @@
 [package]
-name = "vela-cli"
+name = "vecli"
 version = "0.1.0"
 edition = "2024"
 description = "A zero-dependency, bare-bones CLI framework that's genuinely readable."

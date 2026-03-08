@@ -1,6 +1,6 @@
 <div align="center">
 
-# vela-cli
+# vecli
 
 **A zero-dep CLI engine that's genuinely readable.**
 
@@ -13,5 +13,8 @@ vela is currently a work in progress and is not ready for use. The API is subjec
 
 # License
 This project is protected by the RazkarStudio Permissive License, a permissive source license with limitations to AI/ML training use. See [LICENSE.md](LICENSE.md) for more information.
+
+# Contributing
+Contributions are welcome! Please open an issue or submit a pull request on the [GitHub repository](https://github.com/razkar-studio/vecli).
 
 Cheers, RazkarStudio.
