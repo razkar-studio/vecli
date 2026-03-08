@@ -7,6 +7,7 @@ pub struct CommandContext {
 }
 
 #[derive(Default)]
+#[must_use = "App does nothing until you call .run()"]
 pub struct App {
     prog: String,
     name: String,
@@ -163,7 +164,7 @@ impl App {
         }
     }
 
-    pub fn run(&self) {
+    pub fn run(self) {
         let args: Vec<String> = std::env::args().skip(1).collect();
         let parsed_flags = parse_flags(&args);
         // Hmm.. how do we determine about aliases..
