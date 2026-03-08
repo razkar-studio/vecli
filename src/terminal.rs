@@ -143,6 +143,8 @@ impl Terminal {
 ///
 /// # Example
 /// ```no_run
+/// use vecli::Confirm;
+///
 /// let confirmed = Confirm::new("Delete file?")
 ///     .default(false)
 ///     .ask();
@@ -191,6 +193,8 @@ impl<'a> Confirm<'a> {
 ///
 /// # Example
 /// ```no_run
+/// use vecli::Choice;
+///
 /// let env = Choice::new("Select environment:", &["dev", "staging", "prod"])
 ///     .default("dev")
 ///     .ask();

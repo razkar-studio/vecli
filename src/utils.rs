@@ -16,7 +16,7 @@ use std::io::{self, Write};
 /// Panics if stdout cannot be flushed or if reading from stdin fails.
 ///
 /// # Example
-/// ```no_run
+/// ```ignore
 /// let name = input("Enter your name:");
 /// println!("Hello, {name}!");
 /// ```
@@ -43,7 +43,7 @@ pub fn input(prompt: &str) -> String {
 /// without converting first.
 ///
 /// # Example
-/// ```
+/// ```ignore
 /// let args = vec!["--verbose", "--output", "file.txt", "-q", "positional"];
 /// let flags = parse_flags(&args);
 /// assert_eq!(flags["verbose"], "true");

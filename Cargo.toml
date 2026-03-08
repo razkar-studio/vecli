@@ -2,7 +2,7 @@
 name = "vecli"
 version = "0.1.0"
 edition = "2024"
-description = "A zero-dependency, bare-bones CLI framework that's genuinely readable."
+description = "A zero-dependency, minimal CLI framework that's genuinely readable."
 license-file = "LICENSE.md"
 repository = "https://github.com/razkar-studio/vela"
 readme = "README.md"

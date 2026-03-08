@@ -333,13 +333,26 @@ impl App {
             }
         }
 
+        let mut positionals = Vec::new();
+        let mut skip_next = false;
+        for arg in &args[1..] {
+            if skip_next {
+                skip_next = false;
+                continue;
+            }
+            if arg.starts_with("--") {
+                skip_next = true;
+                continue;
+            }
+            if arg.starts_with('-') {
+                continue;
+            }
+            positionals.push(arg.clone());
+        }
+
         (command.handler)(&CommandContext {
             subcommand,
-            positionals: args[1..]
-                .iter()
-                .filter(|a| !a.starts_with('-'))
-                .cloned()
-                .collect(),
+            positionals,
             flags: flags.clone(),
         });
     }
