@@ -7,7 +7,11 @@ fn hello(_: &CommandContext) {
 fn main() {
     App::new("my-app")
         .name("My App")
-        .description("My App's Description")
-        .add_command(Command::new("hello", hello))
+        .description("a very informative description")
+        .add_command(
+            Command::new("hello", hello)
+                .description("prints hello and exit.")
+                .usage("[none]"),
+        )
         .run();
 }

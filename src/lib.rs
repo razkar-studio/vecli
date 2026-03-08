@@ -1,26 +1,74 @@
-//! A zero-dependency, bare-bones CLI framework that's genuinely readable.
+//! A zero-dependency, minimal CLI framework that's genuinely readable, the tool you've been looking for.
 //!
-//! Build an [`App`], register [`Command`]s, and call [`App::run`]. That's it.
-//! Flags support short aliases, strict-mode validation, and automatic `--help`
-//! and `--version` handling with no configuration required.
+//! # Getting Started
 //!
-//! # Example
+//! Let's make your first CLI app using vecli.
+//! First, Add vecli to your `Cargo.toml`:
+//!
+//! ```toml
+//! [dependencies]
+//! vecli = "0.1"
 //! ```
+//!
+//! # Building Your First App
+//!
+//! Every vecli app starts with [`App`], registers [`Command`]s, and calls `.run()`:
+//!
+//! ```no_run
 //! use vecli::{App, Command, CommandContext};
 //!
 //! fn hello(_: &CommandContext) {
-//!     println!("Hello!")
+//!     println!("Hello, world!");
 //! }
 //!
 //! fn main() {
-//!     let app = App::new("my-app")
+//!     App::new("myapp")
 //!         .name("My App")
-//!         .description("My App's Description")
-//!         .add_command(Command::new("hello", hello));
-//!
-//!     app.run();
+//!         .description("Does something cool.")
+//!         .version("1.0.0")
+//!         .show_help_if_no_args(true)
+//!         .add_command(
+//!             Command::new("hello", hello)
+//!                 .description("Prints a greeting")
+//!         )
+//!         .run();
 //! }
 //! ```
+//!
+//! # Flags and Aliases
+//!
+//! Register flags on a command using [`Flag`], with optional short aliases:
+//!
+//! ```no_run
+//! use vecli::{Command, CommandContext, Flag};
+//!
+//! fn install(ctx: &CommandContext) {
+//!     let global = ctx.flags.get("global").is_some();
+//!     println!("Installing... global={global}");
+//! }
+//!
+//! Command::new("install", install)
+//!     .flag(Flag::new("global").alias("g").description("Install globally"));
+//! ```
+//!
+//! # Prompts
+//!
+//! vecli also ships [`Terminal`], [`Confirm`], and [`Choice`] for interactive input:
+//!
+//! ```no_run
+//! use vecli::Confirm;
+//!
+//! let proceed = Confirm::new("Are you sure?")
+//!     .default(false)
+//!     .ask();
+//! ```
+//!
+//! # Philosophy
+//!
+//! vecli is intentionally minimal, zero dependencies, and easy to understand.
+//! If you need proc-macro attributes, automatic type coercion, or async handlers,
+//! consider [`clap`](https://docs.rs/clap) instead. If you want something you can
+//! read and understand in an afternoon, you're in the right place.
 mod app;
 mod terminal;
 mod utils;

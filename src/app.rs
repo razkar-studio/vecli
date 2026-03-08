@@ -48,8 +48,8 @@ pub struct App {
     description: String,
     version: String,
     commands: Vec<Command>,
-    show_help_if_no_args: bool,
-    show_help_on_fail: bool,
+    print_help_if_no_args: bool,
+    print_help_on_fail: bool,
 }
 
 /// A single registered subcommand.
@@ -183,14 +183,14 @@ impl App {
     }
 
     /// When `true`, prints help and exits if no arguments are provided.
-    pub fn show_help_if_no_args(mut self, show: bool) -> Self {
-        self.show_help_if_no_args = show;
+    pub fn print_help_if_no_args(mut self, show: bool) -> Self {
+        self.print_help_if_no_args = show;
         self
     }
 
     /// When `true`, prints the full help listing after any dispatch error.
-    pub fn show_help_on_fail(mut self, show: bool) -> Self {
-        self.show_help_on_fail = show;
+    pub fn print_help_on_fail(mut self, show: bool) -> Self {
+        self.print_help_on_fail = show;
         self
     }
 
@@ -229,19 +229,38 @@ impl App {
         self
     }
 
+    fn _get_else(&self, field: &str, fall_to: &str) -> String {
+        if field.is_empty() {
+            fall_to.to_string()
+        } else {
+            field.to_string()
+        }
+    }
+
     /// Prints the app-level help text to stdout.
     ///
     /// Lists the app name, version, description, and all registered commands.
     pub fn print_help(&self) {
-        println!("{} v{}", self.name, self.version);
-        println!("{}", self.description);
+        if !self.name.is_empty() {
+            println!(
+                "{} v{}",
+                self.name,
+                self._get_else(&self.version, "<unknown>")
+            );
+        }
+        println!("Usage: {} <command> [options]", self.prog);
+        if !self.description.is_empty() {
+            println!();
+            println!("  {}", self.description);
+        }
         println!();
-        println!("USAGE:");
-        println!("  {} <command> [options]", self.prog);
-        println!();
-        println!("COMMANDS:");
-        for cmd in &self.commands {
-            println!("  {:<15} {}", cmd.name, cmd.description);
+        if !self.commands.is_empty() {
+            println!("COMMANDS:");
+            for cmd in &self.commands {
+                println!("  {:<15} {}", cmd.name, cmd.description);
+            }
+        } else {
+            println!("No commands available. Add some using .add_command()!");
         }
     }
 
@@ -253,14 +272,44 @@ impl App {
     ///
     /// If no subcommand is found, or if an unknown subcommand is given, an error message
     /// is printed and the function returns without calling any handler. When
-    /// `show_help_on_fail` is set, the full help listing is also printed.
+    /// `print_help_on_fail` is set, the full help listing is also printed.
     pub fn run(self) {
         let args: Vec<String> = std::env::args().skip(1).collect();
         let parsed_flags = parse_flags(&args);
         let mut flags = std::collections::HashMap::new();
 
-        if args.is_empty() && self.show_help_if_no_args {
+        if args.is_empty() && self.print_help_if_no_args {
             self.print_help();
+            return;
+        }
+
+        if parsed_flags.contains_key("help") {
+            if let Some(first) = args.first() {
+                if let Some(command) = self._find_command(first) {
+                    match &command.usage {
+                        Some(usage) => println!(
+                            "Usage: {} {} {}\n  {}",
+                            self.prog, command.name, usage, command.description
+                        ),
+                        None => println!(
+                            "{} {}\n  {}\n\nNo usage information available.",
+                            self.prog,
+                            command.name,
+                            self._get_else(&command.description, "No description available.")
+                        ),
+                    }
+                    return;
+                }
+            }
+            self.print_help();
+            return;
+        }
+        if parsed_flags.contains_key("version") {
+            println!(
+                "{} v{}",
+                self.name,
+                self._get_else(&self.version, "<unknown>")
+            );
             return;
         }
 
@@ -274,7 +323,7 @@ impl App {
                 "error: No such command '{}', try '{} --help' for help.",
                 subcommand, self.prog
             );
-            if self.show_help_on_fail {
+            if self.print_help_on_fail {
                 self.print_help();
             }
             return;
@@ -288,29 +337,6 @@ impl App {
                 .map(|f| f.name.clone())
                 .unwrap_or_else(|| key.clone());
             flags.insert(canonical, value.clone());
-        }
-
-        if flags.contains_key("help") {
-            if !subcommand.is_empty() {
-                match &command.usage {
-                    Some(usage) => println!(
-                        "Usage: {} {} {}\n{}",
-                        self.prog, command.name, usage, command.description
-                    ),
-                    None => println!(
-                        "{} {} - {}\nNo usage information available.",
-                        self.prog, command.name, command.description
-                    ),
-                }
-                return;
-            }
-            self.print_help();
-            return;
-        }
-
-        if flags.contains_key("version") {
-            println!("{} v{}", self.name, self.version);
-            return;
         }
 
         for parsed_flag in flags.keys() {
@@ -353,7 +379,7 @@ impl App {
         (command.handler)(&CommandContext {
             subcommand,
             positionals,
-            flags: flags.clone(),
+            flags,
         });
     }
 }
