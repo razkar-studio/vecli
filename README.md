@@ -1,6 +1,6 @@
 <div align="center">
 
-# vecli
+![vecli](images/banner.png)
 
 **A zero-dep CLI framework that's genuinely readable.**
 
@@ -13,6 +13,8 @@ vecli is currently a work in progress and is not ready for use. The API is subje
 
 # What is vecli?
 vecli is a zero-dep CLI framework made in Rust with UX in mind, and makes development of CLI tools easy and straightforward.
+
+![example of a cli app made in vecli](images/carbon.png)
 
 # Usage
 
@@ -30,7 +32,7 @@ fn hello(_: &CommandContext) {
 }
 
 fn main() {
-     let app = App::new("my-app")
+     App::new("my-app")
          .name("My App")
          .description("My App's Description")
          .add_command(Command::new("hello", hello))

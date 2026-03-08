@@ -1,7 +1,25 @@
+//! Low-level I/O helpers used internally by the crate.
+//!
+//! [`input`] is a Python-style blocking read from stdin. [`parse_flags`] turns
+//! a raw argument slice into a key-value flag map used by [`crate::app::App::run`].
+
 use std::io::{self, Write};
 
-/// Python-like input() with built-in error handling.
-/// Returns a String instead of a Result.
+/// Prints a prompt and reads one line from stdin.
+///
+/// Flushes stdout before reading so the prompt appears immediately, even in
+/// environments that buffer output. The returned string has trailing newline
+/// and carriage-return characters stripped, but leading whitespace is preserved.
+///
+/// # Panics
+///
+/// Panics if stdout cannot be flushed or if reading from stdin fails.
+///
+/// # Example
+/// ```no_run
+/// let name = input("Enter your name:");
+/// println!("Hello, {name}!");
+/// ```
 pub fn input(prompt: &str) -> String {
     print!("{}", prompt);
     io::stdout().flush().expect("Failed to flush stdout");
@@ -12,6 +30,27 @@ pub fn input(prompt: &str) -> String {
     buffer.trim_end().to_string()
 }
 
+/// Parses a slice of argument strings into a flag map.
+///
+/// Recognizes two flag forms:
+/// - Long flags (`--name`): may consume the next token as a value if it does
+///   not start with `-`. Otherwise the value is `"true"`.
+/// - Short flags (`-x`): always produce the value `"true"`. Value-carrying
+///   short flags are not supported.
+///
+/// Tokens that do not start with `-`, or that start with `---`, are skipped.
+/// The generic bound `S: AsRef<str>` lets you pass `&[String]` or `&[&str]`
+/// without converting first.
+///
+/// # Example
+/// ```
+/// let args = vec!["--verbose", "--output", "file.txt", "-q", "positional"];
+/// let flags = parse_flags(&args);
+/// assert_eq!(flags["verbose"], "true");
+/// assert_eq!(flags["output"], "file.txt");
+/// assert_eq!(flags["q"], "true");
+/// assert!(!flags.contains_key("positional"));
+/// ```
 pub fn parse_flags<S: AsRef<str>>(args: &[S]) -> std::collections::HashMap<String, String> {
     let mut flags = std::collections::HashMap::new();
     let args: Vec<&str> = args.iter().map(|arg| arg.as_ref()).collect();
