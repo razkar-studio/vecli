@@ -7,7 +7,7 @@ pub struct CommandContext {
 }
 
 #[derive(Default)]
-#[must_use = "App does nothing until you call .run()"]
+#[must_use = "App does nothing until you call `.run()`"]
 pub struct App {
     prog: String,
     name: String,

@@ -5,8 +5,9 @@ fn hello(_: &CommandContext) {
 }
 
 fn main() {
-    let app = App::new("my-app")
+    App::new("my-app")
         .name("My App")
         .description("My App's Description")
-        .add_command(Command::new("hello", hello));
+        .add_command(Command::new("hello", hello))
+        .run();
 }
