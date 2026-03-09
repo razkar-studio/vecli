@@ -1,6 +1,6 @@
 [package]
 name = "vecli"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "A zero-dependency, minimal CLI framework that's genuinely readable."
 license-file = "LICENSE.md"
@@ -8,3 +8,4 @@ repository = "https://github.com/razkar-studio/vela"
 readme = "README.md"
 keywords = ["cli", "terminal", "framework", "args"]
 categories = ["command-line-interface"]
+documentation = "https://docs.rs/vecli"

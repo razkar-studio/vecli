@@ -12,7 +12,7 @@ fn main() {
         .description("a very informative description")
         .print_help_if_no_args(true)
         .print_help_on_fail(true)
-        .version("0.0.1")
+        .version("0.1.1")
         .add_command(
             Command::new("hello", hello)
                 .description("prints hello and exit.")
