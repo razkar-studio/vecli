@@ -11,11 +11,29 @@
 
 ---
 
-# Work In Progress
-vecli is currently a work in progress and is not ready for use. The API is subject to change and the crate is experimental.
+# Disclaimer
+vecli is currently in an unstable state, regarding its status as a new crate. The API is subject to change and the crate is experimental.
+I do not recommend using it in production.
 
 # What is vecli?
 vecli is a zero-dep CLI framework made in Rust with UX in mind, and makes development of CLI tools easy and straightforward.
+
+Do you want to make a minimal CLI app but don't want a billion dependencies or doing all by yourself?
+Then vecli is perfect for you! If not? You're at the wrong place.
+
+**Zero dependencies, minimal, but easy to use and powerful.** A great way to start learning to build CLI tools in Rust.
+
+## Features
+
+- Zero dependencies. Compiles instantly, minimal to zero bloat
+- Subcommands as plain functions via a clean handler pattern
+- Built-in `--help` and `--version` with no configuration required
+- Per-command help with usage strings and flag listings
+- Short flag aliases with automatic resolution to canonical names
+- Global flags available across all commands
+- App-level strict flag mode
+- Main entry point for REPL-style usage
+- Interactive prompts built in: `Terminal`, `Confirm`, and `Choice`
 
 ## Documentation
 It's [here](https://docs.rs/vecli).
@@ -48,14 +66,21 @@ fn main() {
 
 Run `cargo run hello`, and you should see `Hello!` printed to the console.
 Congrats, you've created your first CLI tool using vecli! Really, it's *that* easy.
-For more details, check the [documentation](https://docs.rs/vecli).
+
+For more details and features unseen in this README, check the [documentation](https://docs.rs/vecli).
 
 # Installation
-To install vecli, add the following to your `Cargo.toml` file:
+To install vecli as a dependency, run the following command on your cargo project:
+
+```sh
+cargo add vecli
+```
+
+or alternatively, add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-vecli = "0.1"
+vecli = "0.2"
 ```
 
 # License

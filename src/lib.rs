@@ -1,6 +1,6 @@
 //! A zero-dependency, minimal CLI framework that's genuinely readable, the tool you've been looking for.
 //!
-//! Do you want to make a minimal CLI app but doesn't want a billion dependencies or doing all by yourself?
+//! Do you want to make a minimal CLI app but don't want a billion dependencies or doing all by yourself?
 //! Then vecli is perfect for you! If not? You're at the wrong place.
 //!
 //! # Getting Started
@@ -17,7 +17,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! vecli = "0.1"
+//! vecli = "0.2"
 //! ```
 //!
 //! ## Building Your First App
@@ -105,7 +105,7 @@
 //!
 //! Saw that CommandContext class earlier? Good eye. Vecli gives the handler the context of the command, including:
 //!
-//! - `ctx.subcommand`: The command that comes after `hello`
+//! - `ctx.subcommand`: `hello` itself
 //! - `ctx.positionals`: A vector of everything that comes after `subcommand`.
 //! - `ctx.flags`: A `HashMap` of passed flags.
 //!
@@ -152,13 +152,17 @@
 //! Cheers, RazkarStudio.
 
 mod app;
+mod commands;
+mod flags;
+
 mod terminal;
 mod utils;
 
 pub use app::App;
-pub use app::Command;
-pub use app::CommandContext;
-pub use app::Flag;
+pub use commands::Command;
+pub use commands::CommandContext;
+pub use flags::Flag;
+pub use flags::PassedFlags;
 
 pub use terminal::Choice;
 pub use terminal::Confirm;

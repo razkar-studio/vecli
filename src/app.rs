@@ -1,23 +1,11 @@
-//! Core application and command builder types.
+//! Core application builder and dispatch logic.
 //!
-//! This module defines [`App`], [`Command`], [`Flag`], and [`CommandContext`],
-//! which together form the public API for constructing and running a CLI.
+//! The [`App`] struct is the entry point for every vecli program. Configure it
+//! with the builder methods, register commands and flags, then call [`App::run`]
+//! to hand control to the framework.
 
-use crate::utils::parse_flags;
-
-/// Holds the parsed context for a command invocation.
-///
-/// Passed by reference to every command handler. Contains the resolved subcommand
-/// name, any positional arguments (non-flag tokens), and the full set of flags
-/// after alias resolution.
-pub struct CommandContext {
-    /// The subcommand name as typed by the user.
-    pub subcommand: String,
-    /// Positional arguments, in order, with flags filtered out.
-    pub positionals: Vec<String>,
-    /// Resolved flags, keyed by canonical name. Boolean flags have the value `"true"`.
-    pub flags: std::collections::HashMap<String, String>,
-}
+use crate::utils::{format_flag, parse_flags};
+use crate::*;
 
 /// The top-level CLI application builder.
 ///
@@ -43,113 +31,16 @@ pub struct CommandContext {
 #[derive(Default)]
 #[must_use = "App does nothing until you call `.run()`"]
 pub struct App {
-    prog: String,
-    name: String,
+    pub(crate) prog: String,
+    pub(crate) name: String,
     description: String,
     version: String,
+    main_entrypoint: Option<fn(PassedFlags)>,
     commands: Vec<Command>,
+    flags: Vec<Flag>,
     print_help_if_no_args: bool,
     print_help_on_fail: bool,
-}
-
-/// A single registered subcommand.
-///
-/// Build with [`Command::new`] and configure via the builder methods before
-/// passing to [`App::add_command`].
-pub struct Command {
-    name: String,
-    description: String,
-    known_flags: Vec<Flag>,
-    usage: Option<String>,
-    handler: fn(&CommandContext),
     strict_flags: bool,
-}
-
-/// A flag definition for a [`Command`].
-///
-/// Flags can carry an optional short alias (e.g. `"h"` for `"help"`) which is
-/// resolved to the canonical name before the handler is called.
-#[derive(Default)]
-pub struct Flag {
-    /// The canonical long name, without the `--` prefix.
-    pub name: String,
-    /// Optional short alias, without the `-` prefix.
-    pub alias: Option<String>,
-    /// Human-readable description shown in generated help text.
-    pub description: Option<String>,
-}
-
-impl Flag {
-    /// Creates a new flag with the given canonical name.
-    pub fn new(name: impl Into<String>) -> Self {
-        Self {
-            name: name.into(),
-            ..Default::default()
-        }
-    }
-
-    /// Sets the short alias for this flag (e.g. `"h"` to match `-h`).
-    pub fn alias(mut self, alias: impl Into<String>) -> Self {
-        self.alias = Some(alias.into());
-        self
-    }
-
-    /// Sets the description shown in help output.
-    pub fn description(mut self, desc: impl Into<String>) -> Self {
-        self.description = Some(desc.into());
-        self
-    }
-}
-
-impl Command {
-    /// Creates a new command with the given name and handler function.
-    ///
-    /// The `handler` receives a [`CommandContext`] containing the resolved flags
-    /// and positional arguments for this invocation.
-    pub fn new(name: impl Into<String>, handler: fn(&CommandContext)) -> Self {
-        Self {
-            name: name.into(),
-            handler,
-            description: "".into(),
-            known_flags: Vec::new(),
-            usage: None,
-            strict_flags: false,
-        }
-    }
-
-    /// Sets the short description shown in the app-level help listing.
-    pub fn description(mut self, description: impl Into<String>) -> Self {
-        self.description = description.into();
-        self
-    }
-
-    /// Sets the usage string shown when the user runs `<cmd> --help`.
-    ///
-    /// Displayed as: `<prog> <cmd> <usage>`. For example, passing `"<file> [--output <path>]"`
-    /// produces `mytool convert <file> [--output <path>]`.
-    pub fn usage(mut self, usage: impl Into<String>) -> Self {
-        self.usage = Some(usage.into());
-        self
-    }
-
-    /// Controls whether unknown flags cause a hard error or just a warning.
-    ///
-    /// When `true`, passing an unrecognized flag prints an error and exits without
-    /// calling the handler. When `false` (the default), a warning is printed and
-    /// execution continues.
-    pub fn strict_flags(mut self, strict: bool) -> Self {
-        self.strict_flags = strict;
-        self
-    }
-
-    /// Registers a flag definition for this command.
-    ///
-    /// Registered flags participate in alias resolution and appear in help text.
-    /// Can be called multiple times to register multiple flags.
-    pub fn flag(mut self, flag: Flag) -> Self {
-        self.known_flags.push(flag);
-        self
-    }
 }
 
 impl App {
@@ -183,6 +74,9 @@ impl App {
     }
 
     /// When `true`, prints help and exits if no arguments are provided.
+    ///
+    /// Mutually exclusive with [`App::main`]. If both are set, the main entry
+    /// point takes priority and a warning is printed to stderr.
     pub fn print_help_if_no_args(mut self, show: bool) -> Self {
         self.print_help_if_no_args = show;
         self
@@ -194,6 +88,15 @@ impl App {
         self
     }
 
+    /// When `true`, aborts with an error if an unknown app-level flag is passed.
+    ///
+    /// When `false` (the default), unknown flags produce a warning and execution continues.
+    /// Per-command strict mode is configured separately via [`Command::strict_flags`].
+    pub fn strict_flags(mut self, strict: bool) -> Self {
+        self.strict_flags = strict;
+        self
+    }
+
     /// Returns the registered command with the given name, if any.
     fn _find_command(&self, name: &str) -> Option<&Command> {
         self.commands.iter().find(|c| c.name == name)
@@ -202,6 +105,17 @@ impl App {
     /// Registers a command built with the [`Command`] builder.
     pub fn add_command(mut self, command: Command) -> Self {
         self.commands.push(command);
+        self
+    }
+
+    /// Registers a flag on the app.
+    ///
+    /// If the flag was created with [`Flag::global`], it is available to all commands
+    /// and merged into [`CommandContext::flags`] automatically. Otherwise it is treated
+    /// as an entry-point flag, visible in the OPTIONS section of help and delivered
+    /// via [`PassedFlags`] to the main entry handler.
+    pub fn flag(mut self, flag: Flag) -> Self {
+        self.flags.push(flag);
         self
     }
 
@@ -229,6 +143,17 @@ impl App {
         self
     }
 
+    /// Registers a handler called when no subcommand is provided.
+    ///
+    /// The handler receives a [`PassedFlags`] map containing any flags the user
+    /// passed before a subcommand. Mutually exclusive with [`App::print_help_if_no_args`];
+    /// if both are set, this handler takes priority.
+    pub fn main(mut self, entry: fn(PassedFlags)) -> Self {
+        self.main_entrypoint = Some(entry);
+        self
+    }
+
+    /// Returns `fall_to` if `field` is empty, otherwise returns `field`.
     fn _get_else(&self, field: &str, fall_to: &str) -> String {
         if field.is_empty() {
             fall_to.to_string()
@@ -237,9 +162,18 @@ impl App {
         }
     }
 
+    /// Partitions registered flags into `(global_flags, entry_flags)`.
+    ///
+    /// Global flags are made available to all commands. Entry flags are delivered
+    /// only to the main entry handler via [`PassedFlags`].
+    fn _get_flags(&self) -> (Vec<Flag>, Vec<Flag>) {
+        self.flags.iter().cloned().partition(|flag| flag.is_global)
+    }
+
     /// Prints the app-level help text to stdout.
     ///
-    /// Lists the app name, version, description, and all registered commands.
+    /// Output includes the app name, version, description, COMMANDS listing,
+    /// OPTIONS (entry-point flags and `--version`), and GLOBAL FLAGS.
     pub fn print_help(&self) {
         if !self.name.is_empty() {
             println!(
@@ -251,16 +185,60 @@ impl App {
         println!("Usage: {} <command> [options]", self.prog);
         if !self.description.is_empty() {
             println!();
-            println!("  {}", self.description);
+            println!("    {}", self.description);
         }
         println!();
+
+        let longest = self
+            .commands
+            .iter()
+            .map(|c| c.name.len())
+            .chain(["help, -h", "version"].iter().map(|s| s.len()))
+            .max()
+            .unwrap_or(0)
+            + 10;
+
         if !self.commands.is_empty() {
             println!("COMMANDS:");
             for cmd in &self.commands {
-                println!("  {:<15} {}", cmd.name, cmd.description);
+                println!(
+                    "    {:<width$} {}",
+                    cmd.name,
+                    cmd.description,
+                    width = longest
+                );
             }
+            println!();
         } else {
             println!("No commands available. Add some using .add_command()!");
+            println!();
+        }
+
+        let (global_flags, entry_flags) = self._get_flags();
+
+        println!("OPTIONS:");
+        println!(
+            "    {:<width$} print the app name and version and exit",
+            "--version",
+            width = longest
+        );
+        for flag in entry_flags {
+            let left = format_flag(&flag.name, flag.alias.as_deref());
+            let description = flag.description.as_deref().unwrap_or("");
+            println!("    {:<width$} {}", left, description, width = longest);
+        }
+        println!();
+
+        println!("GLOBAL FLAGS:");
+        println!(
+            "    {:<width$} print this help message and exit",
+            "--help, -h",
+            width = longest
+        );
+        for flag in global_flags {
+            let left = format_flag(&flag.name, flag.alias.as_deref());
+            let description = flag.description.as_deref().unwrap_or("");
+            println!("    {:<width$} {}", left, description, width = longest);
         }
     }
 
@@ -270,40 +248,54 @@ impl App {
     /// - `--help` / `-h`: prints command-specific or app-level help and exits.
     /// - `--version`: prints the app name and version and exits.
     ///
-    /// If no subcommand is found, or if an unknown subcommand is given, an error message
-    /// is printed and the function returns without calling any handler. When
-    /// `print_help_on_fail` is set, the full help listing is also printed.
+    /// If no subcommand is provided and a main entry point is registered, the entry
+    /// handler is called with the resolved flags. If no subcommand is found in the
+    /// registry, an error is printed and the function returns without calling any handler.
+    /// When `print_help_on_fail` is set, the full help listing is also printed.
     pub fn run(self) {
         let args: Vec<String> = std::env::args().skip(1).collect();
         let parsed_flags = parse_flags(&args);
         let mut flags = std::collections::HashMap::new();
 
-        if args.is_empty() && self.print_help_if_no_args {
-            self.print_help();
-            return;
+        if args.is_empty() {
+            // feature thought
+            // - use custom exit code system? unnecessary but fun. programmer returns 0, default entry returns 404
+            //   CHANGES? change self.main_entrypoint type to Option<fn() -> i32> and do accordingly
+
+            if let Some(_) = self.main_entrypoint
+                && self.print_help_if_no_args
+            {
+                eprintln!(
+                    "warning: App entry point and field print_help_if_no_args are mutually exclusive. App entry point takes priority."
+                );
+            }
+
+            if let Some(main_entrypoint) = self.main_entrypoint {
+                main_entrypoint(PassedFlags {
+                    map: parse_flags(&args),
+                });
+                return;
+            }
+
+            if self.print_help_if_no_args {
+                self.print_help();
+                return;
+            }
         }
 
-        if parsed_flags.contains_key("help") {
-            if let Some(first) = args.first()
-                && let Some(command) = self._find_command(first)
+        let subcommand_name = args.iter().find(|a| !a.starts_with('-'));
+
+        if parsed_flags.contains_key("help") || parsed_flags.contains_key("h") {
+            if let Some(name) = subcommand_name
+                && let Some(command) = self._find_command(name)
             {
-                match &command.usage {
-                    Some(usage) => println!(
-                        "Usage: {} {} {}\n  {}",
-                        self.prog, command.name, usage, command.description
-                    ),
-                    None => println!(
-                        "{} {}\n  {}\n\nNo usage information available.",
-                        self.prog,
-                        command.name,
-                        self._get_else(&command.description, "No description available.")
-                    ),
-                }
+                command.print_help(&self);
                 return;
             }
             self.print_help();
             return;
         }
+
         if parsed_flags.contains_key("version") {
             println!(
                 "{} v{}",
@@ -313,8 +305,41 @@ impl App {
             return;
         }
 
-        let Some(subcommand) = args.first() else {
-            println!("error: No command provided. Try '{} --help'.", self.prog);
+        let (global_flags, entry_flags) = self._get_flags();
+        let all_app_flags: Vec<&Flag> = global_flags.iter().chain(entry_flags.iter()).collect();
+
+        let mut canonical_flags = std::collections::HashMap::new();
+        for (key, value) in &parsed_flags {
+            let canonical = all_app_flags
+                .iter()
+                .find(|f| f.alias.as_deref() == Some(key.as_str()))
+                .map(|f| f.name.clone())
+                .unwrap_or_else(|| key.clone());
+            canonical_flags.insert(canonical, value.clone());
+        }
+
+        for parsed_flag in canonical_flags.keys() {
+            if matches!(parsed_flag.as_str(), "help" | "h" | "version") {
+                continue;
+            }
+            let is_known = all_app_flags.iter().any(|f| f.name == *parsed_flag);
+            if !is_known {
+                if self.strict_flags {
+                    println!("error: Unknown flag '--{}'.", parsed_flag);
+                    return;
+                }
+                println!("warning: Unknown flag '--{}'.", parsed_flag);
+            }
+        }
+
+        let Some(subcommand) = args.iter().find(|a| !a.starts_with('-')) else {
+            if let Some(main_entrypoint) = self.main_entrypoint {
+                main_entrypoint(PassedFlags {
+                    map: canonical_flags,
+                });
+            } else {
+                println!("error: No command provided. Try '{} --help'.", self.prog);
+            }
             return;
         };
         let subcommand = subcommand.to_owned();
@@ -329,10 +354,13 @@ impl App {
             return;
         };
 
+        let (global_flags, _) = self._get_flags();
+
         for (key, value) in &parsed_flags {
             let canonical = command
                 .known_flags
                 .iter()
+                .chain(global_flags.iter())
                 .find(|f| f.alias.as_deref() == Some(key.as_str()))
                 .map(|f| f.name.clone())
                 .unwrap_or_else(|| key.clone());
@@ -343,7 +371,11 @@ impl App {
             if parsed_flag == "help" || parsed_flag == "version" {
                 continue;
             }
-            let is_known = command.known_flags.iter().any(|f| f.name == *parsed_flag);
+            let is_known = command
+                .known_flags
+                .iter()
+                .chain(global_flags.iter())
+                .any(|f| f.name == *parsed_flag);
             if !is_known {
                 if command.strict_flags {
                     println!(

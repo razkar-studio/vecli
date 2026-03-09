@@ -1,7 +1,8 @@
-//! Low-level I/O helpers used internally by the crate.
+//! Low-level helpers used internally by the crate.
 //!
 //! [`input`] is a Python-style blocking read from stdin. [`parse_flags`] turns
 //! a raw argument slice into a key-value flag map used by [`crate::app::App::run`].
+//! [`format_flag`] produces a consistent display string for help output.
 
 use std::io::{self, Write};
 
@@ -28,6 +29,24 @@ pub fn input(prompt: &str) -> String {
         .read_line(&mut buffer)
         .expect("Failed to read line");
     buffer.trim_end().to_string()
+}
+
+/// Formats a flag name and optional alias into a help display string.
+///
+/// Produces `--name, -alias` when an alias is present, or `--name` when not.
+/// Used to build consistent left-side columns in help output.
+///
+/// # Example
+/// ```
+/// // format_flag("silent", Some("s")) -> "--silent, -s"
+/// // format_flag("verbose", None)     -> "--verbose"
+/// ```
+pub fn format_flag(name: &str, alias: Option<&str>) -> String {
+    if let Some(alias) = alias {
+        format!("--{}, -{}", name, alias)
+    } else {
+        format!("--{}", name)
+    }
 }
 
 /// Parses a slice of argument strings into a flag map.

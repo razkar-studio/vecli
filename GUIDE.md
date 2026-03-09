@@ -16,7 +16,7 @@ which is the same as including it in your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-vecli = "0.1"
+vecli = "0.2"
 ```
 
 ## Building Your First App
@@ -104,7 +104,7 @@ To construct a flag, only the name is needed, but you can customize them with an
 
 Saw that CommandContext class earlier? Good eye. Vecli gives the handler the context of the command, including:
 
-- `ctx.subcommand`: The command that comes after `hello`
+- `ctx.subcommand`: `hello` itself.
 - `ctx.positionals`: A vector of everything that comes after `subcommand`.
 - `ctx.flags`: A `HashMap` of passed flags.
 
