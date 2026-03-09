@@ -10,16 +10,20 @@ use crate::flags::Flag;
 ///
 /// Build with [`Command::new`] and configure via the builder methods before
 /// passing to [`App::add_command`].
+#[derive(Default)]
 pub struct Command {
     pub(crate) name: String,
     pub(crate) description: String,
     pub(crate) known_flags: Vec<Flag>,
     pub(crate) usage: Option<String>,
-    pub(crate) handler: fn(&CommandContext),
+    pub(crate) handler: Option<fn(&CommandContext)>,
     pub(crate) strict_flags: bool,
+    pub(crate) subcommands: Vec<Command>,
+    pub(crate) print_help_if_no_args: bool,
 }
 
 impl Command {
+    // Constructors
     /// Creates a new command with the given name and handler function.
     ///
     /// The `handler` receives a [`CommandContext`] containing the resolved flags
@@ -27,11 +31,15 @@ impl Command {
     pub fn new(name: impl Into<String>, handler: fn(&CommandContext)) -> Self {
         Self {
             name: name.into(),
-            handler,
-            description: "".into(),
-            known_flags: Vec::new(),
-            usage: None,
-            strict_flags: false,
+            handler: Some(handler),
+            ..Default::default()
+        }
+    }
+
+    pub fn parent(name: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            ..Default::default()
         }
     }
 
@@ -72,6 +80,16 @@ impl Command {
         self
     }
 
+    pub fn subcommand(mut self, subcommand: Command) -> Self {
+        self.subcommands.push(subcommand);
+        self
+    }
+
+    pub fn print_help_if_no_args(mut self, print: bool) -> Self {
+        self.print_help_if_no_args = print;
+        self
+    }
+
     /// Prints help text for this command to stdout.
     ///
     /// Output includes the usage line, description, and a formatted flag listing.
@@ -79,15 +97,15 @@ impl Command {
     /// is used for the usage line.
     pub(crate) fn print_help(&self, app: &App) {
         if let Some(usage) = &self.usage {
-            println!("Usage: {} {} {}", app.prog, self.name, usage);
+            println!("USAGE: {} {} {}", app.prog, self.name, usage);
         } else if !self.known_flags.is_empty() {
             // fallback that still makes sense
-            println!("Usage: {} {} [options]", app.prog, self.name);
+            println!("USAGE: {} {} [options]", app.prog, self.name);
         }
         println!("    {}", self.description);
         println!();
         if !self.known_flags.is_empty() {
-            println!("Options:");
+            println!("OPTIONS:");
 
             let longest = self
                 .known_flags
@@ -107,6 +125,27 @@ impl Command {
                 };
                 let description = flag.description.as_deref().unwrap_or("");
                 println!("    {:<width$} {}", left, description, width = longest + 10);
+            }
+        }
+        if !self.subcommands.is_empty() {
+            println!();
+            println!("SUBCOMMANDS:");
+
+            let longest = self
+                .subcommands
+                .iter()
+                .map(|s| s.name.len())
+                .max()
+                .unwrap_or(0)
+                + 10;
+
+            for subcommand in &self.subcommands {
+                println!(
+                    "    {:<width$} {}",
+                    subcommand.name,
+                    subcommand.description,
+                    width = longest
+                );
             }
         }
     }

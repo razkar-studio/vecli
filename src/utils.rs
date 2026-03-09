@@ -4,6 +4,7 @@
 //! a raw argument slice into a key-value flag map used by [`crate::app::App::run`].
 //! [`format_flag`] produces a consistent display string for help output.
 
+use crate::*;
 use std::io::{self, Write};
 
 /// Prints a prompt and reads one line from stdin.
@@ -105,4 +106,82 @@ pub fn parse_flags<S: AsRef<str>>(args: &[S]) -> std::collections::HashMap<Strin
     }
 
     flags
+}
+
+pub(crate) fn dispatch(
+    command: &Command,
+    args: &[String],
+    flags: std::collections::HashMap<String, String>,
+    global_flags: &[Flag],
+) {
+    let next = args.iter().find(|a| !a.starts_with('-'));
+
+    if let Some(name) = next
+        && let Some(sub) = command.subcommands.iter().find(|s| s.name == *name)
+    {
+        let mut sub_flags = flags.clone();
+        for (key, value) in flags.iter() {
+            let canonical = sub
+                .known_flags
+                .iter()
+                .chain(global_flags.iter())
+                .find(|f| f.alias.as_deref() == Some(key.as_str()))
+                .map(|f| f.name.clone())
+                .unwrap_or_else(|| key.clone());
+            sub_flags.insert(canonical, value.clone());
+        }
+        return dispatch(sub, &args[1..], sub_flags, global_flags);
+    }
+
+    if next.is_none() {
+        if command.handler.is_some() && command.print_help_if_no_args {
+            eprintln!(
+                "warning: handler and print_help_if_no_args are mutually exclusive. Handler takes priority."
+            );
+        }
+        if command.handler.is_some() {
+            // fall through to call below
+        } else if command.print_help_if_no_args {
+            // handle at call site
+            return;
+        } else {
+            println!("error: No subcommand provided.");
+            return;
+        }
+    }
+
+    for parsed_flag in flags.keys() {
+        if parsed_flag == "help" || parsed_flag == "version" {
+            continue;
+        }
+        let is_known = command
+            .known_flags
+            .iter()
+            .chain(global_flags.iter())
+            .any(|f| f.name == *parsed_flag);
+        if !is_known {
+            if command.strict_flags {
+                println!(
+                    "error: Unknown flag '--{}' for command '{}'.",
+                    parsed_flag, command.name
+                );
+                return;
+            }
+            println!("warning: Unknown flag '--{}'.", parsed_flag);
+        }
+    }
+
+    let positionals: Vec<String> = args
+        .iter()
+        .filter(|a| !a.starts_with('-'))
+        .cloned()
+        .collect();
+
+    if let Some(handler) = command.handler {
+        handler(&CommandContext {
+            subcommand: command.name.clone(),
+            positionals,
+            flags,
+        });
+    }
 }

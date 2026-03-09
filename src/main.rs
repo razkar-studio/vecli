@@ -16,6 +16,27 @@ fn hello(ctx: &CommandContext) {
     }
 }
 
+fn goodbye(ctx: &CommandContext) {
+    if ctx.flags.contains_key("debug") {
+        println!(
+            "Debug Mode\nCommandContext {{ subcommand: '{}', positionals: {:?}, flags: {:?} }}",
+            ctx.subcommand, ctx.positionals, ctx.flags
+        );
+        println!();
+    }
+
+    if ctx.flags.contains_key("dry-run") {
+        println!("[DRY RUN] Would've greeted you with hello.");
+    } else if !ctx.flags.contains_key("silent") {
+        println!("Hello!")
+    }
+    if ctx.flags.contains_key("dry-run") {
+        println!("[DRY RUN] Would've greeted you with goodbye.");
+    } else if !ctx.flags.contains_key("silent") {
+        println!("Goodbye!")
+    }
+}
+
 fn entry(flags: PassedFlags) {
     println!(
         "Flags: {}",
@@ -50,7 +71,11 @@ fn main() {
                         .alias("n")
                         .description("Run without making any changes."),
                 )
-                .strict_flags(true),
+                .strict_flags(true)
+                .subcommand(
+                    Command::new("goodbye", goodbye).description("Prints both hello and goodbye"),
+                )
+                .print_help_if_no_args(true),
         )
         .run();
 }

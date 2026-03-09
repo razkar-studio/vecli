@@ -4,7 +4,7 @@
 //! with the builder methods, register commands and flags, then call [`App::run`]
 //! to hand control to the framework.
 
-use crate::utils::{format_flag, parse_flags};
+use crate::utils::{dispatch, format_flag, parse_flags};
 use crate::*;
 
 /// The top-level CLI application builder.
@@ -131,14 +131,18 @@ impl App {
         handler: fn(&CommandContext),
         usage: Option<impl Into<String>>,
         strict_flags: bool,
+        print_help_if_no_args: bool,
+        subcommands: Vec<Command>,
     ) -> Self {
         self.commands.push(Command {
             name: name.into(),
             description: description.into(),
-            handler,
+            handler: Some(handler),
             usage: usage.map(|u| u.into()),
             known_flags: flags.unwrap_or_default(),
             strict_flags,
+            print_help_if_no_args,
+            subcommands,
         });
         self
     }
@@ -182,7 +186,7 @@ impl App {
                 self._get_else(&self.version, "<unknown>")
             );
         }
-        println!("Usage: {} <command> [options]", self.prog);
+        println!("USAGE: {} <command> [options]", self.prog);
         if !self.description.is_empty() {
             println!();
             println!("    {}", self.description);
@@ -255,7 +259,6 @@ impl App {
     pub fn run(self) {
         let args: Vec<String> = std::env::args().skip(1).collect();
         let parsed_flags = parse_flags(&args);
-        let mut flags = std::collections::HashMap::new();
 
         if args.is_empty() {
             // feature thought
@@ -342,6 +345,7 @@ impl App {
             }
             return;
         };
+
         let subcommand = subcommand.to_owned();
         let Some(command) = self._find_command(&subcommand) else {
             println!(
@@ -355,64 +359,7 @@ impl App {
         };
 
         let (global_flags, _) = self._get_flags();
-
-        for (key, value) in &parsed_flags {
-            let canonical = command
-                .known_flags
-                .iter()
-                .chain(global_flags.iter())
-                .find(|f| f.alias.as_deref() == Some(key.as_str()))
-                .map(|f| f.name.clone())
-                .unwrap_or_else(|| key.clone());
-            flags.insert(canonical, value.clone());
-        }
-
-        for parsed_flag in flags.keys() {
-            if parsed_flag == "help" || parsed_flag == "version" {
-                continue;
-            }
-            let is_known = command
-                .known_flags
-                .iter()
-                .chain(global_flags.iter())
-                .any(|f| f.name == *parsed_flag);
-            if !is_known {
-                if command.strict_flags {
-                    println!(
-                        "error: Unknown flag '--{}' for command '{}'.",
-                        parsed_flag, subcommand
-                    );
-                    return;
-                }
-                println!(
-                    "warning: Unknown flag '--{}' for command '{}'.",
-                    parsed_flag, subcommand
-                );
-            }
-        }
-
-        let mut positionals = Vec::new();
-        let mut skip_next = false;
-        for arg in &args[1..] {
-            if skip_next {
-                skip_next = false;
-                continue;
-            }
-            if arg.starts_with("--") {
-                skip_next = true;
-                continue;
-            }
-            if arg.starts_with('-') {
-                continue;
-            }
-            positionals.push(arg.clone());
-        }
-
-        (command.handler)(&CommandContext {
-            subcommand,
-            positionals,
-            flags,
-        });
+        dispatch(command, &args[1..], canonical_flags, &global_flags);
     }
 }
 
