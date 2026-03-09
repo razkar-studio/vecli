@@ -2,7 +2,7 @@
 
 ![vecli](images/banner.png)
 
-**A zero-dep CLI framework that's genuinely readable.**
+**A zero-dep, minimal CLI framework that's genuinely readable.**
 
 </div>
 
@@ -14,9 +14,9 @@ vecli is currently a work in progress and is not ready for use. The API is subje
 # What is vecli?
 vecli is a zero-dep CLI framework made in Rust with UX in mind, and makes development of CLI tools easy and straightforward.
 
-![example of a cli app made in vecli](images/carbon.png)
-
 # Usage
+
+![example of a cli app made in vecli](images/carbon.png)
 
 Let's create your first CLI tool using vecli.
 
@@ -42,13 +42,14 @@ fn main() {
 
 Run `cargo run hello`, and you should see `Hello!` printed to the console.
 Congrats, you've created your first CLI tool using vecli! Really, it's *that* easy.
+For more details, check the documentation.
 
 # Installation
 To install vecli, add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-vecli = { git = "https://github.com/razkar-studio/vecli.git" }
+vecli = "0.1"
 ```
 
 # License

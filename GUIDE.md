@@ -1,3 +1,5 @@
+(this guide can also be found at the documentation)
+
 A zero-dependency, minimal CLI framework that's genuinely readable, the tool you've been looking for.
 
 # Getting Started
@@ -140,3 +142,9 @@ fn main() {
         .run();
 }
 ```
+
+If you want a feature added, please submit an issue to the [GitHub repository](https://github.com/razkar-studio/vecli.git)! 
+This project is still very experimental, so expect bugs. When you *do* find one, also submit an issue! 
+Feel free to read the rest of the documentation if you are a developer.
+
+Cheers, RazkarStudio.

@@ -284,22 +284,22 @@ impl App {
         }
 
         if parsed_flags.contains_key("help") {
-            if let Some(first) = args.first() {
-                if let Some(command) = self._find_command(first) {
-                    match &command.usage {
-                        Some(usage) => println!(
-                            "Usage: {} {} {}\n  {}",
-                            self.prog, command.name, usage, command.description
-                        ),
-                        None => println!(
-                            "{} {}\n  {}\n\nNo usage information available.",
-                            self.prog,
-                            command.name,
-                            self._get_else(&command.description, "No description available.")
-                        ),
-                    }
-                    return;
+            if let Some(first) = args.first()
+                && let Some(command) = self._find_command(first)
+            {
+                match &command.usage {
+                    Some(usage) => println!(
+                        "Usage: {} {} {}\n  {}",
+                        self.prog, command.name, usage, command.description
+                    ),
+                    None => println!(
+                        "{} {}\n  {}\n\nNo usage information available.",
+                        self.prog,
+                        command.name,
+                        self._get_else(&command.description, "No description available.")
+                    ),
                 }
+                return;
             }
             self.print_help();
             return;
