@@ -71,5 +71,3 @@ flag parsing before any command is dispatched.
 ---
 
 While making commands, you may have noticed that the function takes this peculiar argument: `&CommandContext`. What is that? Know more about the [CommandContext](./context.md) as our next stop.
-
-If you've been this far from the beginning, congrats! This doc is under production and you've reached the end... for now. More guides will be added soon! For now, read the API reference at [docs.rs](https://docs.rs/vecli).

@@ -15,9 +15,9 @@
 
 ---
 
-# Disclaimer
-vecli is currently in an unstable state, regarding its status as a new crate. The API is subject to change and the crate is experimental.
-I do not recommend using it in production.
+> [!WARNING]
+> vecli is currently in an unstable state, regarding its status as a new crate. The API is subject to change and the crate is experimental.
+> I do not recommend using it in production.
 
 # What is vecli?
 vecli is a zero-dep CLI framework made in Rust with UX in mind, and makes development of CLI tools easy and straightforward.
@@ -38,9 +38,17 @@ Then vecli is perfect for you! If not? You're at the wrong place.
 - App-level strict flag mode
 - Main entry point for REPL-style usage
 - Interactive prompts built in: `Terminal`, `Confirm`, and `Choice`
+- Nested subcommands with recursive dispatch
+- Parent commands via `Command::parent()` for grouping without a handler
+- Per-command `print_help_if_no_args` support
 
 ## Documentation
-It's [here](https://docs.rs/vecli).
+The API reference is [here](https://docs.rs/vecli).
+
+> [!NOTE]
+> The user guide is under construction. Expect the bare minimum for knowing vecli.
+
+The user guide is [here](https://razkar-studio.github.io/vecli/).
 
 # Usage
 
@@ -71,7 +79,7 @@ fn main() {
 Run `cargo run hello`, and you should see `Hello!` printed to the console.
 Congrats, you've created your first CLI tool using vecli! Really, it's *that* easy.
 
-For more details and features unseen in this README, check the [documentation](https://docs.rs/vecli).
+For more details and features unseen in this README, check the [documentation](https://docs.rs/vecli), or the [user guide](https://razkar-studio.github.io/vecli/).
 
 # Installation
 To install vecli as a dependency, run the following command on your cargo project:
