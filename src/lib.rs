@@ -5,6 +5,9 @@
 //!
 //! # Getting Started
 //!
+//! > [!IMPORTANT]
+//! > A more friendly guide is being built. This is the API reference documentation. Check them out at [the getting started guide](https://razkar-studio.github.io/vecli/).
+//!
 //! ## Installation
 //!
 //! To install `vecli` as a dependency, run:

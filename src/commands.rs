@@ -3,7 +3,6 @@
 //! [`Command`] represents a single subcommand registered on an [`crate::App`].
 //! [`CommandContext`] is the parsed invocation context delivered to every handler.
 
-use crate::App;
 use crate::flags::Flag;
 
 /// A single registered subcommand.
@@ -95,12 +94,12 @@ impl Command {
     /// Output includes the usage line, description, and a formatted flag listing.
     /// If no usage string was set but flags are registered, a `[options]` fallback
     /// is used for the usage line.
-    pub(crate) fn print_help(&self, app: &App) {
+    pub(crate) fn print_help(&self, prog: &str) {
         if let Some(usage) = &self.usage {
-            println!("USAGE: {} {} {}", app.prog, self.name, usage);
+            println!("USAGE: {} {} {}", prog, self.name, usage);
         } else if !self.known_flags.is_empty() {
             // fallback that still makes sense
-            println!("USAGE: {} {} [options]", app.prog, self.name);
+            println!("USAGE: {} {} [options]", prog, self.name);
         }
         println!("    {}", self.description);
         println!();

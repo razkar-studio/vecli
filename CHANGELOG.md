@@ -2,6 +2,31 @@
 
 All notable changes to vecli will be documented here.
 
+## [0.3.0] - 10/03/2026
+
+### Added
+- Subcommand chaining — commands can now nest arbitrarily deep (e.g. `app remote add`)
+- `Command::parent()` constructor for grouping commands with no handler of their own
+- `Command::subcommand()` builder method for attaching nested commands
+- `Command::print_help_if_no_args()` builder method for parent commands
+- `SUBCOMMANDS` section in command-level help output
+- `dispatch()` internal helper in `utils.rs` — recursive dispatch through the command tree
+- `prog` passed through dispatch for correct help output at any nesting depth
+
+### Changed
+- `Command::handler` is now `Option<fn(&CommandContext)>` — parent commands carry no handler
+- `Command::new()` still sets a handler; use `Command::parent()` when no handler is needed
+- `ctx.subcommand` is always the deepest matched command name, not the full path
+- `ctx.positionals` contains only tokens after the deepest matched command
+- `dispatch` moved to `utils.rs` and imported into `app.rs`, replacing the inline dispatch block in `run()`
+- Positional collection in `dispatch` now correctly skips flag values (not just flag names)
+
+### Fixed
+- Alias resolution now runs at each level of the command tree, not only at the app level
+- Parent commands with no handler and no `print_help_if_no_args` now print a clear error instead of silently returning
+
+---
+
 ## [0.2.0] - 09/03/2026
 
 ### Added

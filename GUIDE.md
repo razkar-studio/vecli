@@ -1,4 +1,5 @@
 (this guide can also be found at the documentation)
+(this guide is deprecated. only trust docs.rs or the github pages site)
 
 A zero-dependency, minimal CLI framework that's genuinely readable, the tool you've been looking for.
 
@@ -16,7 +17,7 @@ which is the same as including it in your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-vecli = "0.2"
+vecli = "0.3"
 ```
 
 ## Building Your First App

@@ -1,6 +1,6 @@
 [package]
 name = "vecli"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 description = "A zero-dependency, minimal CLI framework that's genuinely readable."
 license-file = "LICENSE.md"

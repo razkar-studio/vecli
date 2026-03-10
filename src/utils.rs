@@ -108,11 +108,39 @@ pub fn parse_flags<S: AsRef<str>>(args: &[S]) -> std::collections::HashMap<Strin
     flags
 }
 
+/// Recursively dispatches a parsed invocation through the command tree.
+///
+/// Starting from `command`, scans `args` for the next positional token and
+/// checks whether it matches a registered subcommand. If it does, resolves
+/// any flag aliases against the subcommand's known flags and recurses with
+/// the matched subcommand and the remaining args. Recursion continues until
+/// no subcommand matches or `args` is exhausted, at which point the current
+/// command's handler is called.
+///
+/// Before calling the handler, flags are validated against `command.known_flags`
+/// and `global_flags`. If `command.strict_flags` is set, an unrecognized flag
+/// aborts with an error message. Otherwise a warning is printed and execution
+/// continues.
+///
+/// The [`CommandContext`] delivered to the handler always carries:
+/// - `subcommand`: the name of the deepest matched command.
+/// - `positionals`: non-flag tokens remaining after the deepest matched command name.
+/// - `flags`: the resolved flag map at that depth, including global flags.
+///
+/// # Behavior when no subcommand is found
+///
+/// If no positional token is present in `args`:
+/// - If `command` has a handler, it is called (with a warning if
+///   `print_help_if_no_args` is also set, since they are mutually exclusive).
+/// - If `command` has no handler and `print_help_if_no_args` is set, help is
+///   printed via [`Command::print_help`].
+/// - If neither is set, an error message is printed and the function returns.
 pub(crate) fn dispatch(
     command: &Command,
     args: &[String],
     flags: std::collections::HashMap<String, String>,
     global_flags: &[Flag],
+    prog: &str,
 ) {
     let next = args.iter().find(|a| !a.starts_with('-'));
 
@@ -130,7 +158,7 @@ pub(crate) fn dispatch(
                 .unwrap_or_else(|| key.clone());
             sub_flags.insert(canonical, value.clone());
         }
-        return dispatch(sub, &args[1..], sub_flags, global_flags);
+        return dispatch(sub, &args[1..], sub_flags, global_flags, prog);
     }
 
     if next.is_none() {
@@ -139,14 +167,14 @@ pub(crate) fn dispatch(
                 "warning: handler and print_help_if_no_args are mutually exclusive. Handler takes priority."
             );
         }
-        if command.handler.is_some() {
-            // fall through to call below
-        } else if command.print_help_if_no_args {
-            // handle at call site
-            return;
-        } else {
-            println!("error: No subcommand provided.");
-            return;
+        if command.handler.is_none() {
+            if command.print_help_if_no_args {
+                command.print_help(prog);
+                return;
+            } else {
+                println!("error: No subcommand provided.");
+                return;
+            }
         }
     }
 
@@ -171,11 +199,30 @@ pub(crate) fn dispatch(
         }
     }
 
-    let positionals: Vec<String> = args
-        .iter()
-        .filter(|a| !a.starts_with('-'))
-        .cloned()
-        .collect();
+    let positionals: Vec<String> = {
+        let mut result = Vec::new();
+        let mut skip_next = false;
+        for arg in args.iter() {
+            if skip_next {
+                skip_next = false;
+                continue;
+            }
+            if arg.starts_with("--") {
+                let key = &arg[2..];
+                if let Some(val) = flags.get(key) {
+                    if val != "true" {
+                        skip_next = true;
+                    }
+                }
+                continue;
+            }
+            if arg.starts_with('-') {
+                continue;
+            }
+            result.push(arg.clone());
+        }
+        result
+    };
 
     if let Some(handler) = command.handler {
         handler(&CommandContext {

@@ -1,0 +1,9 @@
+[book]
+title = "vecli"
+authors = ["razkar-studio"]
+language = "en"
+src = "src"
+
+[output.html]
+site-url = "/vecli/"
+git-repository-url = "https://github.com/razkar-studio/vecli"

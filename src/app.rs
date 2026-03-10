@@ -292,7 +292,7 @@ impl App {
             if let Some(name) = subcommand_name
                 && let Some(command) = self._find_command(name)
             {
-                command.print_help(&self);
+                command.print_help(&self.prog);
                 return;
             }
             self.print_help();
@@ -326,7 +326,7 @@ impl App {
                 continue;
             }
             let is_known = all_app_flags.iter().any(|f| f.name == *parsed_flag);
-            if !is_known {
+            if !is_known && self.commands.is_empty() {
                 if self.strict_flags {
                     println!("error: Unknown flag '--{}'.", parsed_flag);
                     return;
@@ -359,7 +359,13 @@ impl App {
         };
 
         let (global_flags, _) = self._get_flags();
-        dispatch(command, &args[1..], canonical_flags, &global_flags);
+        dispatch(
+            command,
+            &args[1..],
+            canonical_flags,
+            &global_flags,
+            &self.prog,
+        );
     }
 }
 
