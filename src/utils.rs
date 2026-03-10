@@ -207,13 +207,13 @@ pub(crate) fn dispatch(
                 skip_next = false;
                 continue;
             }
-            if arg.starts_with("--") {
-                let key = &arg[2..];
-                if let Some(val) = flags.get(key) {
-                    if val != "true" {
-                        skip_next = true;
-                    }
+            if let Some(key) = arg.strip_prefix("--") {
+                if let Some(val) = flags.get(key)
+                    && val != "true"
+                {
+                    skip_next = true;
                 }
+
                 continue;
             }
             if arg.starts_with('-') {

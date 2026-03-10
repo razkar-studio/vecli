@@ -123,6 +123,8 @@ impl App {
     ///
     /// Prefer [`App::add_command`] for most cases. This variant is useful when constructing
     /// commands dynamically at runtime.
+    #[allow(clippy::too_many_arguments)]
+    #[deprecated(since = "0.2.0", note = "Use [`App::add_command`] instead.")]
     pub fn add_command_param(
         mut self,
         name: impl Into<String>,

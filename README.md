@@ -9,7 +9,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/vecli)](https://crates.io/crates/vecli)
 [![GitHub](https://img.shields.io/github/v/release/razkar-studio/vecli)](https://github.com/razkar-studio/vecli/releases)
-[![mdBook](https://img.shields.io/badge/docs-mdBook-blue.svg)](https://razkar-studio.github.io/vecli/)
+[![mdBook](https://img.shields.io/badge/user_guide-mdBook-blue.svg)](https://razkar-studio.github.io/vecli/)
 
 </div>
 
@@ -19,7 +19,7 @@
 > vecli is currently in an unstable state, regarding its status as a new crate. The API is subject to change and the crate is experimental.
 > I do not recommend using it in production.
 
-# What is vecli?
+## What is vecli?
 vecli is a zero-dep CLI framework made in Rust with UX in mind, and makes development of CLI tools easy and straightforward.
 
 Do you want to make a minimal CLI app but don't want a billion dependencies or doing all by yourself?
@@ -38,9 +38,6 @@ Then vecli is perfect for you! If not? You're at the wrong place.
 - App-level strict flag mode
 - Main entry point for REPL-style usage
 - Interactive prompts built in: `Terminal`, `Confirm`, and `Choice`
-- Nested subcommands with recursive dispatch
-- Parent commands via `Command::parent()` for grouping without a handler
-- Per-command `print_help_if_no_args` support
 
 ## Documentation
 The API reference is [here](https://docs.rs/vecli).
@@ -79,7 +76,8 @@ fn main() {
 Run `cargo run hello`, and you should see `Hello!` printed to the console.
 Congrats, you've created your first CLI tool using vecli! Really, it's *that* easy.
 
-For more details and features unseen in this README, check the [documentation](https://docs.rs/vecli), or the [user guide](https://razkar-studio.github.io/vecli/).
+> [!NOTE]
+> For more details and features unseen in this README, check the [documentation](https://docs.rs/vecli), or the [user guide](https://razkar-studio.github.io/vecli/).
 
 # Installation
 To install vecli as a dependency, run the following command on your cargo project:
@@ -94,6 +92,10 @@ or alternatively, add the following to your `Cargo.toml` file:
 [dependencies]
 vecli = "0.2"
 ```
+
+## Examples
+
+The [GitHub repository](https://github.com/razkar-studio/vecli) contains an example CLI tool built using vecli. Clone the repository and try it out for yourself using `cargo run --example taskr`.
 
 # License
 This project is protected by the RazkarStudio Permissive License, a permissive source license with limitations to AI/ML training use. See [LICENSE.md](LICENSE.md) for more information.
