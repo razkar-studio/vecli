@@ -9,7 +9,7 @@
 
 # Core Concepts
 - [Commands](core-concepts/commands.md)
-  + [Subcommands](core-concepts/commands.md)
+  + [Subcommands](core-concepts/subcommands.md)
 - [Flags](core-concepts/flags.md)
 - [CommandContext](core-concepts/context.md)
 
