@@ -15,8 +15,8 @@
 
 # Terminal And Prompting
 - [Terminal](terminal/terminal.md)
-  + [Confirm (Navigate to ## Confirmation, applies below)](terminal/terminal.md)
-  + [Prompt](terminal/terminal.md)
-  + [Choice](terminal/terminal.md)
+  + [Confirm (Navigate to a specific section, applies below)]()
+  + [Prompt]()
+  + [Choice]()
 
 ## More Soon!
