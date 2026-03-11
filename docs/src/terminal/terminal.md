@@ -118,3 +118,6 @@ Choice::new("What's the best fruit?", ["mango", "watermelon", "grape", "orange"]
 
 A few possibilities for this feature could be a quiz of some sort. I don't know, make something awesome with vecli!
 
+---
+
+If you've been this far from the beginning, congrats! This doc is under production and you've reached the end... for now. More guides will be added soon! For now, read the API reference at [docs.rs](https://docs.rs/vecli).

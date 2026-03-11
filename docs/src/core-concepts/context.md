@@ -75,4 +75,3 @@ fn add(ctx: &CommandContext) {
 Now our app is looking a bit dry, it only accepts commands with no further elaboration.
 Interact with the user using the [Terminal](../terminal/terminal.md), a collection of interactive terminal prompt utilities.
 
-If you've been this far from the beginning, congrats! This doc is under production and you've reached the end... for now. More guides will be added soon! For now, read the API reference at [docs.rs](https://docs.rs/vecli).
