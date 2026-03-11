@@ -20,7 +20,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! vecli = "0.2"
+//! vecli = "0.3"
 //! ```
 //!
 //! ## Building Your First App
@@ -147,6 +147,10 @@
 //!         .run();
 //! }
 //! ```
+//! 
+//! ---
+//! 
+//! The stuff here may be outdated. For the most up-to-date user guide, check the [User Guide](https://razkar-studio.github.io/vecli).
 //!
 //! If you want a feature added, please submit an issue to the [GitHub repository](https://github.com/razkar-studio/vecli.git)!
 //! This project is still very experimental, so expect bugs. When you *do* find one, also submit an issue!

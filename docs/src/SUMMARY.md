@@ -1,6 +1,6 @@
 # Summary
 
-[Introduction](README.md)
+[Introduction](introduction.md)
 
 # Getting Started
 - [Installation](getting-started/installation.md)
@@ -12,5 +12,11 @@
   + [Subcommands](core-concepts/subcommands.md)
 - [Flags](core-concepts/flags.md)
 - [CommandContext](core-concepts/context.md)
+
+# Terminal And Prompting
+- [Terminal](terminal/terminal.md)
+  + [Confirm (Navigate to ## Confirmation, applies below)](terminal/terminal.md)
+  + [Prompt](terminal/terminal.md)
+  + [Choice](terminal/terminal.md)
 
 ## More Soon!

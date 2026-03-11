@@ -8,6 +8,8 @@
 [![Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://docs.rs/vecli)
 
 [![Crates.io](https://img.shields.io/crates/v/vecli)](https://crates.io/crates/vecli)
+[![lib.rs](https://img.shields.io/badge/vecli-lib.rs-orange)](https://lib.rs/crates/vecli)
+
 [![GitHub](https://img.shields.io/github/v/release/razkar-studio/vecli)](https://github.com/razkar-studio/vecli/releases)
 [![mdBook](https://img.shields.io/badge/user_guide-mdBook-blue.svg)](https://razkar-studio.github.io/vecli/)
 
@@ -20,7 +22,7 @@
 > I do not recommend using it in production.
 
 ## What is vecli?
-vecli is a zero-dep CLI framework made in Rust with UX in mind, and makes development of CLI tools easy and straightforward.
+**vecli** *(pronounced vek-lii)* is a zero-dep CLI framework made in Rust with UX in mind, and makes development of CLI tools easy and straightforward.
 
 Do you want to make a minimal CLI app but don't want a billion dependencies or doing all by yourself?
 Then vecli is perfect for you! If not? You're at the wrong place.
@@ -90,7 +92,7 @@ or alternatively, add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-vecli = "0.2"
+vecli = "0.3"
 ```
 
 ## Examples
