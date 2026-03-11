@@ -1,5 +1,7 @@
 # First App
 
+!['hello, vecli!'](../images/hello,_vecli!.png)
+
 > [!IMPORTANT]
 > This guide documentation is a work in progress. Pages are missing. Expect only the bare minimum to know about using vecli.
 

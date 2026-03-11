@@ -1,5 +1,7 @@
 # CommandContext
 
+!['no context'](../images/no_context.png)
+
 Every command handler receives a `&CommandContext` as its only argument. It contains everything
 vecli parsed from the command line for that invocation.
 

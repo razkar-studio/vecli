@@ -1,5 +1,7 @@
 # Subcommands
 
+Full subcommand chaining support was added on [version 0.3.0](https://github.com/razkar-studio/vecli/releases/tag/v0.3.0).
+
 Say we want a `goodbye` subcommand for our `hello` command that prints a farewell message. We can achieve this flawlessly by adding a new subcommand to our `hello` command.
 
 First, make the handler for it, we'll need it later:

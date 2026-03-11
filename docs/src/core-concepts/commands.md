@@ -1,5 +1,7 @@
 # Commands
 
+!['don't tell me what to do'](../images/don't_tell_me_what to_do.png)
+
 Let's give your app some commands to run. Here's how you can define them:
 
 ```rust

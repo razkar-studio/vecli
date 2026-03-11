@@ -1,5 +1,7 @@
 # Flags
 
+!['oh, you mean a nation\'s flag?'](../images/oh,_you_mean_a nation's_flag_.png)
+
 Flags are named options passed by the user at the command line, like `--silent` or `--output file.txt`.
 vecli handles parsing, alias resolution, and delivery to your handler automatically.
 

@@ -6,7 +6,6 @@
 
 [![License](https://img.shields.io/badge/license-RSPL-blue)](./LICENSE.md)
 [![Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://docs.rs/vecli)
-
 [![Crates.io](https://img.shields.io/crates/v/vecli)](https://crates.io/crates/vecli)
 [![lib.rs](https://img.shields.io/badge/vecli-lib.rs-orange)](https://lib.rs/crates/vecli)
 

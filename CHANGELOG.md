@@ -2,6 +2,13 @@
 
 All notable changes to vecli will be documented here.
 
+## [0.3.2] - 11/03/2026
+
+### Added
+- Added pages to [the user guide](https://razkar-studio.github.io/vecli).
+
+---
+
 ## [0.3.1] - 11/03/2026
 
 ### Added

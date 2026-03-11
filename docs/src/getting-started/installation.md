@@ -1,7 +1,6 @@
 # Installation
 
-> [!IMPORTANT]
-> vecli is a relatively new crate and may still be in development.
+![cargo add vecli](../images/cargo_install_vecli.png)
 
 vecli is available on [crates.io](https://crates.io/crates/vecli). To add it to your project, run:
 
